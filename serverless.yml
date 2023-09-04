@@ -1,0 +1,19 @@
+service: users-microservice
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: "ap-southeast-1"
+
+functions:
+  signup:
+    handler: app/handler.Signup
+    events:
+      - httpApi:
+          path: /signup
+          method: get
+
+plugins:
+  - serverless-offline
+  - serverless-plugin-typescript
