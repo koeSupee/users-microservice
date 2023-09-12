@@ -1,15 +1,3 @@
-import { APIGatewayProxyEventV2 } from "aws-lambda";
-
-export const Signup = async (event: APIGatewayProxyEventV2) => {
-  console.log(event);
-  return {
-    statusCode: 200,
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-    },
-    body: JSON.stringify({
-      message: "Response from Signup",
-      data: {},
-    }),
-  };
-};
+import "reflect-metadata";
+// export everything
+export * from "./handlers/userHandler";

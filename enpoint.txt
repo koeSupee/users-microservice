@@ -1,0 +1,20 @@
+endpoints:
+  POST - https://x0mxkeoy07.execute-api.ap-southeast-1.amazonaws.com/signup
+  POST - https://x0mxkeoy07.execute-api.ap-southeast-1.amazonaws.com/login
+  POST - https://x0mxkeoy07.execute-api.ap-southeast-1.amazonaws.com/verify
+  POST - https://x0mxkeoy07.execute-api.ap-southeast-1.amazonaws.com/user
+  PUT - https://x0mxkeoy07.execute-api.ap-southeast-1.amazonaws.com/user
+  GET - https://x0mxkeoy07.execute-api.ap-southeast-1.amazonaws.com/user
+  POST - https://x0mxkeoy07.execute-api.ap-southeast-1.amazonaws.com/cart
+  PUT - https://x0mxkeoy07.execute-api.ap-southeast-1.amazonaws.com/cart
+  GET - https://x0mxkeoy07.execute-api.ap-southeast-1.amazonaws.com/cart
+  POST - https://x0mxkeoy07.execute-api.ap-southeast-1.amazonaws.com/payment
+  PUT - https://x0mxkeoy07.execute-api.ap-southeast-1.amazonaws.com/payment
+  GET - https://x0mxkeoy07.execute-api.ap-southeast-1.amazonaws.com/payment
+functions:
+  signup: users-microservice-dev-signup (27 MB)
+  login: users-microservice-dev-login (27 MB)
+  verify: users-microservice-dev-verify (27 MB)
+  profile: users-microservice-dev-profile (27 MB)
+  cart: users-microservice-dev-cart (27 MB)
+  payment: users-microservice-dev-payment (27 MB)
