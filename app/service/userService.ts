@@ -16,21 +16,28 @@ export class UserService {
 
   //User
   async CreateUser(event: APIGatewayProxyEventV2) {
-    const input = plainToClass(SignupInput, event.body);
-    const error = await AppValidatoinError(input);
-    if (error) return ErrorResponse(404, error);
 
-    const salt = await GetSalt();
-    const hashedPassword = await GetHashedPassword(input.password, salt);
-    const data = await this.repository.createAccount({
-      email: input.email,
-      password: hashedPassword,
-      salt: salt,
-      phone: input.phone,
-      userType: "BUYER",
-    });
-
-    return SuccessResponse(data);
+    try {
+      const input = plainToClass(SignupInput, event.body);
+      const error = await AppValidatoinError(input);
+      if (error) return ErrorResponse(404, error);
+  
+      const salt = await GetSalt();
+      const hashedPassword = await GetHashedPassword(input.password, salt);
+      const data = await this.repository.createAccount({
+        email: input.email,
+        password: hashedPassword,
+        phone: input.phone,
+        userType: "BUYER",
+        salt: salt,
+      });
+  
+      return SuccessResponse({data});
+      
+    } catch (error) {
+      console.log(error);
+      return ErrorResponse(500, error);
+    }
   }
 
   async UserLogin(event: APIGatewayProxyEventV2) {

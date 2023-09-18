@@ -25,6 +25,7 @@ const tsyringe_1 = require("tsyringe");
 const class_transformer_1 = require("class-transformer");
 const SignupInput_1 = require("../models/dto/SignupInput");
 const errors_1 = require("../util/errors");
+const password_1 = require("../util/password");
 let UserService = class UserService {
     constructor(repository) {
         this.repository = repository;
@@ -32,20 +33,26 @@ let UserService = class UserService {
     //User
     CreateUser(event) {
         return __awaiter(this, void 0, void 0, function* () {
-            const input = (0, class_transformer_1.plainToClass)(SignupInput_1.SignupInput, event.body);
-            const error = yield (0, errors_1.AppValidatoinError)(input);
-            if (error)
-                return (0, response_1.ErrorResponse)(404, error);
-            const salt = "";
-            const hashedPassword = "";
-            const data = yield this.repository.createAccount({
-                email: input.email,
-                password: hashedPassword,
-                salt: salt,
-                phone: input.phone,
-                userType: "BUYER",
-            });
-            return (0, response_1.SuccessResponse)(input);
+            try {
+                const input = (0, class_transformer_1.plainToClass)(SignupInput_1.SignupInput, event.body);
+                const error = yield (0, errors_1.AppValidatoinError)(input);
+                if (error)
+                    return (0, response_1.ErrorResponse)(404, error);
+                const salt = yield (0, password_1.GetSalt)();
+                const hashedPassword = yield (0, password_1.GetHashedPassword)(input.password, salt);
+                const data = yield this.repository.createAccount({
+                    email: input.email,
+                    password: hashedPassword,
+                    phone: input.phone,
+                    userType: "BUYER",
+                    salt: salt,
+                });
+                return (0, response_1.SuccessResponse)({ data });
+            }
+            catch (error) {
+                console.log(error);
+                return (0, response_1.ErrorResponse)(500, error);
+            }
         });
     }
     UserLogin(event) {

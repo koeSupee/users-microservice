@@ -10,10 +10,19 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserRepository = void 0;
+const dbClient_1 = require("../util/dbClient");
 class UserRepository {
     constructor() { }
     createAccount({ email, password, salt, phone, userType }) {
-        return __awaiter(this, void 0, void 0, function* () { });
+        return __awaiter(this, void 0, void 0, function* () {
+            const client = yield (0, dbClient_1.DBClient)();
+            yield client.connect();
+            const result = yield client.query(`INSERT INTO users (email, password, salt, phone, user_type) VALUES ($1, $2, $3, $4, $5) RETURNING *`, [email, password, salt, phone, userType]);
+            yield client.end();
+            if (result.rowCount > 0) {
+                return result.rows[0];
+            }
+        });
     }
 }
 exports.UserRepository = UserRepository;

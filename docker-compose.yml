@@ -1,0 +1,17 @@
+version: "4.0"
+services:
+  postgres:
+    image: postgres:latest
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=123456
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=user_service
+    port:
+      - "5400:5400"
+    volumes:
+      - db:/var/lib/postgres/data
+
+volumes:
+  db:
+    driver: local
