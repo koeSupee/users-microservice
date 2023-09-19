@@ -4,6 +4,7 @@ import { UserRepository } from "../repository/userRepository";
 import { autoInjectable } from "tsyringe";
 import { plainToClass } from "class-transformer";
 import { SignupInput } from "../models/dto/SignupInput";
+import { LoginInput } from "../models/dto/LoginInput";
 import { AppValidatoinError } from "../util/errors";
 import { GetSalt, GetHashedPassword } from "../util/password";
 
@@ -41,6 +42,19 @@ export class UserService {
   }
 
   async UserLogin(event: APIGatewayProxyEventV2) {
+    try {
+      const input = plainToClass(LoginInput, event.body);
+      const error = await AppValidatoinError(input);
+      if (error) return ErrorResponse(404, error);
+
+      const data = await this.repository.findAccount(input.email);
+  
+      return SuccessResponse({data});
+      
+    } catch (error) {
+      console.log(error);
+      return ErrorResponse(500, error);
+    }
     return SuccessResponse({ message: "response from User login" });
   }
 

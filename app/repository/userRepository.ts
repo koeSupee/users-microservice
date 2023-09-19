@@ -16,4 +16,19 @@ export class UserRepository {
         return result.rows[0] as UserModel;
       }
   }
+
+  async findAccount(email:string){
+    const client = await DBClient();
+    await client.connect();
+    const result = await client.query(
+      `SELECT * FROM users WHERE email = $1`,
+      [email]
+    );
+    await client.end();
+    if(result.rowCount < 0) {
+      throw new Error("User not found");
+         
+    }
+    return result.rows[0] as UserModel;
+  }
 }
