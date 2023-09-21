@@ -2,6 +2,7 @@
   "compilerOptions": {
     "module": "CommonJS",
     "preserveConstEnums": true,
+    "strict": true,
     "strictNullChecks": true,
     "allowJs": true,
     "esModuleInterop": true,

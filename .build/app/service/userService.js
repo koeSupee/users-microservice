@@ -83,14 +83,16 @@ let UserService = class UserService {
     GetVerificationToken(event) {
         return __awaiter(this, void 0, void 0, function* () {
             const token = event.headers.authorization;
-            const payload = yield (0, password_1.VerifyToken)(token);
-            if (payload) {
-                const { code, expiry } = (0, notification_1.GenerateAccessCode)();
-                // save on DB to confirm verification
-                const response = yield (0, notification_1.SendVerificationCode)(code, payload.phone);
-                return (0, response_1.SuccessResponse)({
-                    message: "verification code is sent to your registered mobile number!",
-                });
+            if (token) {
+                const payload = yield (0, password_1.VerifyToken)(token);
+                if (payload) {
+                    const { code, expiry } = (0, notification_1.GenerateAccessCode)();
+                    // save on DB to confirm verification
+                    const response = yield (0, notification_1.SendVerificationCode)(code, payload.phone);
+                    return (0, response_1.SuccessResponse)({
+                        message: "verification code is sent to your registered mobile number!",
+                    });
+                }
             }
         });
     }

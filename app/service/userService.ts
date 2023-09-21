@@ -80,14 +80,16 @@ export class UserService {
 
   async GetVerificationToken(event: APIGatewayProxyEventV2) {
     const token = event.headers.authorization;
-    const payload = await VerifyToken(token);
-    if (payload) {
-      const { code, expiry } = GenerateAccessCode();
-      // save on DB to confirm verification
-      const response = await SendVerificationCode(code, payload.phone);
-      return SuccessResponse({
-        message: "verification code is sent to your registered mobile number!",
-      });
+    if (token) {
+      const payload = await VerifyToken(token);
+      if (payload) {
+        const { code, expiry } = GenerateAccessCode();
+        // save on DB to confirm verification
+        const response = await SendVerificationCode(code, payload.phone);
+        return SuccessResponse({
+          message: "verification code is sent to your registered mobile number!",
+        });
+      }
     }
   }
 
