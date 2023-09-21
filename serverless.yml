@@ -5,8 +5,8 @@ provider:
   name: aws
   runtime: nodejs18.x
   versionFucntion: false
-  state: "dev"
-  region: "ap-southeast-1"
+  versionFunctions: false
+  stage: "dev"
   httpApi:
     cors: true
 

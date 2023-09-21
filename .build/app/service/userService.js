@@ -24,8 +24,10 @@ const userRepository_1 = require("../repository/userRepository");
 const tsyringe_1 = require("tsyringe");
 const class_transformer_1 = require("class-transformer");
 const SignupInput_1 = require("../models/dto/SignupInput");
+const LoginInput_1 = require("../models/dto/LoginInput");
 const errors_1 = require("../util/errors");
 const password_1 = require("../util/password");
+const notification_1 = require("../util/notification");
 let UserService = class UserService {
     constructor(repository) {
         this.repository = repository;
@@ -34,6 +36,7 @@ let UserService = class UserService {
     CreateUser(event) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                // แปลง JSON เป็นอ็อบเจ็กต์ของคลาส SignupInput
                 const input = (0, class_transformer_1.plainToClass)(SignupInput_1.SignupInput, event.body);
                 const error = yield (0, errors_1.AppValidatoinError)(input);
                 if (error)
@@ -57,7 +60,38 @@ let UserService = class UserService {
     }
     UserLogin(event) {
         return __awaiter(this, void 0, void 0, function* () {
-            return (0, response_1.SuccessResponse)({ message: "response from User login" });
+            try {
+                // แปลง JSON เป็นอ็อบเจ็กต์ของคลาส LoginInput
+                const input = (0, class_transformer_1.plainToClass)(LoginInput_1.LoginInput, event.body);
+                const error = yield (0, errors_1.AppValidatoinError)(input);
+                if (error)
+                    return (0, response_1.ErrorResponse)(404, error);
+                const data = yield this.repository.findAccount(input.email);
+                const verified = yield (0, password_1.ValidatePassword)(input.password, data.password, data.salt);
+                if (!verified) {
+                    throw new Error("password does not match!");
+                }
+                const token = (0, password_1.GetToken)(data);
+                return (0, response_1.SuccessResponse)({ token });
+            }
+            catch (error) {
+                console.log(error);
+                return (0, response_1.ErrorResponse)(500, error);
+            }
+        });
+    }
+    GetVerificationToken(event) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const token = event.headers.authorization;
+            const payload = yield (0, password_1.VerifyToken)(token);
+            if (payload) {
+                const { code, expiry } = (0, notification_1.GenerateAccessCode)();
+                // save on DB to confirm verification
+                const response = yield (0, notification_1.SendVerificationCode)(code, payload.phone);
+                return (0, response_1.SuccessResponse)({
+                    message: "verification code is sent to your registered mobile number!",
+                });
+            }
         });
     }
     VerifyUser(event) {

@@ -6,7 +6,17 @@ import { plainToClass } from "class-transformer";
 import { SignupInput } from "../models/dto/SignupInput";
 import { LoginInput } from "../models/dto/LoginInput";
 import { AppValidatoinError } from "../util/errors";
-import { GetSalt, GetHashedPassword } from "../util/password";
+import { 
+  GetSalt, 
+  GetHashedPassword,
+  ValidatePassword, 
+  GetToken,
+  VerifyToken 
+} from "../util/password";
+import {
+  GenerateAccessCode,
+  SendVerificationCode,
+} from "../util/notification";
 
 @autoInjectable()
 export class UserService {
@@ -19,6 +29,7 @@ export class UserService {
   async CreateUser(event: APIGatewayProxyEventV2) {
 
     try {
+      // แปลง JSON เป็นอ็อบเจ็กต์ของคลาส SignupInput
       const input = plainToClass(SignupInput, event.body);
       const error = await AppValidatoinError(input);
       if (error) return ErrorResponse(404, error);
@@ -42,20 +53,42 @@ export class UserService {
   }
 
   async UserLogin(event: APIGatewayProxyEventV2) {
+    
     try {
+      // แปลง JSON เป็นอ็อบเจ็กต์ของคลาส LoginInput
       const input = plainToClass(LoginInput, event.body);
       const error = await AppValidatoinError(input);
       if (error) return ErrorResponse(404, error);
 
       const data = await this.repository.findAccount(input.email);
-  
-      return SuccessResponse({data});
+      const verified = await ValidatePassword(
+        input.password,
+        data.password,
+        data.salt
+      );
+      if (!verified) {
+        throw new Error("password does not match!");
+      }
+      const token = GetToken(data);
+      return SuccessResponse({ token });
       
     } catch (error) {
       console.log(error);
       return ErrorResponse(500, error);
     }
-    return SuccessResponse({ message: "response from User login" });
+  }
+
+  async GetVerificationToken(event: APIGatewayProxyEventV2) {
+    const token = event.headers.authorization;
+    const payload = await VerifyToken(token);
+    if (payload) {
+      const { code, expiry } = GenerateAccessCode();
+      // save on DB to confirm verification
+      const response = await SendVerificationCode(code, payload.phone);
+      return SuccessResponse({
+        message: "verification code is sent to your registered mobile number!",
+      });
+    }
   }
 
   async VerifyUser(event: APIGatewayProxyEventV2) {

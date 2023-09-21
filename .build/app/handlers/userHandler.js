@@ -22,10 +22,9 @@ const service = tsyringe_1.container.resolve(userService_1.UserService);
 exports.Signup = (0, core_1.default)((event) => {
     return service.CreateUser(event);
 }).use((0, http_json_body_parser_1.default)());
-const Login = (event) => __awaiter(void 0, void 0, void 0, function* () {
+exports.Login = (0, core_1.default)((event) => {
     return service.UserLogin(event);
-});
-exports.Login = Login;
+}).use((0, http_json_body_parser_1.default)());
 const Verify = (event) => __awaiter(void 0, void 0, void 0, function* () {
     return service.VerifyUser(event);
 });
