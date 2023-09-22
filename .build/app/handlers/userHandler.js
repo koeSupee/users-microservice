@@ -26,12 +26,21 @@ exports.Login = (0, core_1.default)((event) => {
     return service.UserLogin(event);
 }).use((0, http_json_body_parser_1.default)());
 const Verify = (event) => __awaiter(void 0, void 0, void 0, function* () {
+    const httpMethod = event.requestContext.http.method.toLowerCase();
+    if (httpMethod === "post") {
+        return service.VerifyUser(event);
+    }
+    else if (httpMethod === "get") {
+        return service.GetVerificationToken(event);
+    }
+    else {
+        return (0, response_1.ErrorResponse)(404, "request method not supported");
+    }
     return service.VerifyUser(event);
 });
 exports.Verify = Verify;
 const Profile = (event) => __awaiter(void 0, void 0, void 0, function* () {
     const httpMethod = event.requestContext.http.method.toLowerCase();
-    // console.log("http is :", httpMethod);
     if (httpMethod === "post") {
         return service.CreateProfile(event);
     }

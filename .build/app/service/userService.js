@@ -87,8 +87,10 @@ let UserService = class UserService {
                 const payload = yield (0, password_1.VerifyToken)(token);
                 if (payload) {
                     const { code, expiry } = (0, notification_1.GenerateAccessCode)();
+                    yield this.repository.updateVerificationCode(payload.user_id, code, expiry);
                     // save on DB to confirm verification
-                    const response = yield (0, notification_1.SendVerificationCode)(code, payload.phone);
+                    // const response = await SendVerificationCode(code, payload.phone);
+                    console.log(code, expiry);
                     return (0, response_1.SuccessResponse)({
                         message: "verification code is sent to your registered mobile number!",
                     });

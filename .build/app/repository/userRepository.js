@@ -10,19 +10,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserRepository = void 0;
-const dbClient_1 = require("../util/dbClient");
-class UserRepository {
-    constructor() { }
+const dbOperation_1 = require("./dbOperation");
+class UserRepository extends dbOperation_1.DBOperation {
+    constructor() {
+        super();
+    }
     createAccount({ email, password, salt, phone, userType }) {
         return __awaiter(this, void 0, void 0, function* () {
-            const client = yield (0, dbClient_1.DBClient)();
-            yield client.connect();
-            const checkEmail = yield client.query(`SELECT * FROM users WHERE email = $1`, [email]);
+            const checkEmail = yield this.executeQuery("SELECT * FROM users WHERE email = $1", [email]);
             if (checkEmail.rowCount > 0) {
                 throw new Error("This email already exists.");
             }
-            const result = yield client.query(`INSERT INTO users (email, password, salt, phone, user_type) VALUES ($1, $2, $3, $4, $5) RETURNING *`, [email, password, salt, phone, userType]);
-            yield client.end();
+            const stringQuery = "INSERT INTO users (email, password, salt, phone, user_type) VALUES ($1, $2, $3, $4, $5) RETURNING *";
+            const values = [email, password, salt, phone, userType];
+            const result = yield this.executeQuery(stringQuery, values);
             if (result.rowCount > 0) {
                 return result.rows[0];
             }
@@ -30,14 +31,22 @@ class UserRepository {
     }
     findAccount(email) {
         return __awaiter(this, void 0, void 0, function* () {
-            const client = yield (0, dbClient_1.DBClient)();
-            yield client.connect();
-            const result = yield client.query(`SELECT user_id,phone,email,password,salt FROM users WHERE email = $1`, [email]);
-            yield client.end();
+            const stringQuery = "SELECT user_id,phone,email,password,salt FROM users WHERE email = $1";
+            const result = yield this.executeQuery(stringQuery, [email]);
             if (result.rowCount < 1) {
                 throw new Error("User not found");
             }
             return result.rows[0];
+        });
+    }
+    updateVerificationCode(userID, code, expiry) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const queryString = "UPDATE users SET verification_code=$1, expiry=$2 WHERE user_id=$3 RETURNING *";
+            const value = [code, expiry, userID];
+            const result = yield this.executeQuery(queryString, value);
+            if (result.rowCount > 0) {
+                return result.rows[0];
+            }
         });
     }
 }
