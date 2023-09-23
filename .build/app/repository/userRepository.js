@@ -31,7 +31,7 @@ class UserRepository extends dbOperation_1.DBOperation {
     }
     findAccount(email) {
         return __awaiter(this, void 0, void 0, function* () {
-            const stringQuery = "SELECT user_id,phone,email,password,salt FROM users WHERE email = $1";
+            const stringQuery = "SELECT user_id,phone,email,password,salt,verification_code, expiry FROM users WHERE email = $1";
             const result = yield this.executeQuery(stringQuery, [email]);
             if (result.rowCount < 1) {
                 throw new Error("User not found");
@@ -47,6 +47,17 @@ class UserRepository extends dbOperation_1.DBOperation {
             if (result.rowCount > 0) {
                 return result.rows[0];
             }
+        });
+    }
+    updateVerifyUser(userID) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const queryString = "UPDATE users SET verified=TRUE WHERE user_id=$1 RETURNING *";
+            const value = [userID];
+            const result = yield this.executeQuery(queryString, value);
+            if (result.rowCount > 0) {
+                return result.rows[0];
+            }
+            throw new Error("User already verified!");
         });
     }
 }

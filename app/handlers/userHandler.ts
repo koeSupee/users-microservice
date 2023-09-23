@@ -15,7 +15,7 @@ export const Login = middy((event: APIGatewayProxyEventV2) => {
   return service.UserLogin(event);
 }).use(bodyParser());
 
-export const Verify = async (event: APIGatewayProxyEventV2) => {
+export const Verify = middy((event: APIGatewayProxyEventV2) => {
   const httpMethod = event.requestContext.http.method.toLowerCase();
 
   if (httpMethod === "post") {
@@ -23,12 +23,11 @@ export const Verify = async (event: APIGatewayProxyEventV2) => {
   } else if (httpMethod === "get") {
     return service.GetVerificationToken(event);
   } else {
-    return ErrorResponse(404, "request method not supported");
+    return service.ResponeWithError(event);
   }
-  return service.VerifyUser(event);
-};
+}).use(bodyParser());
 
-export const Profile = async (event: APIGatewayProxyEventV2) => {
+export const Profile = middy((event: APIGatewayProxyEventV2) => {
   const httpMethod = event.requestContext.http.method.toLowerCase();
 
   if (httpMethod === "post") {
@@ -38,11 +37,11 @@ export const Profile = async (event: APIGatewayProxyEventV2) => {
   } else if (httpMethod === "put") {
     return service.EditProfile(event);
   } else {
-    return ErrorResponse(404, "request method not supported");
+    return service.ResponeWithError(event);
   }
-};
+}).use(bodyParser());
 
-export const Cart = async (event: APIGatewayProxyEventV2) => {
+export const Cart = middy((event: APIGatewayProxyEventV2) => {
   const httpMethod = event.requestContext.http.method.toLowerCase();
   if (httpMethod === "post") {
     return service.CreateCart(event);
@@ -51,11 +50,11 @@ export const Cart = async (event: APIGatewayProxyEventV2) => {
   } else if (httpMethod === "put") {
     return service.UpdateCart(event);
   } else {
-    return ErrorResponse(404, "request method not supported");
+    return service.ResponeWithError(event);
   }
-};
+}).use(bodyParser());
 
-export const Payment = async (event: APIGatewayProxyEventV2) => {
+export const Payment = middy((event: APIGatewayProxyEventV2) => {
   const httpMethod = event.requestContext.http.method.toLowerCase();
   if (httpMethod === "post") {
     return service.CreatePayment(event);
@@ -64,6 +63,6 @@ export const Payment = async (event: APIGatewayProxyEventV2) => {
   } else if (httpMethod === "put") {
     return service.UpdatePayment(event);
   } else {
-    return ErrorResponse(404, "request method not supported");
+    return service.ResponeWithError(event);
   }
-};
+}).use(bodyParser());

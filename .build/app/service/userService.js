@@ -25,12 +25,19 @@ const tsyringe_1 = require("tsyringe");
 const class_transformer_1 = require("class-transformer");
 const SignupInput_1 = require("../models/dto/SignupInput");
 const LoginInput_1 = require("../models/dto/LoginInput");
+const UpdateInput_1 = require("../models/dto/UpdateInput");
 const errors_1 = require("../util/errors");
 const password_1 = require("../util/password");
 const notification_1 = require("../util/notification");
+const dateHelper_1 = require("../util/dateHelper");
 let UserService = class UserService {
     constructor(repository) {
         this.repository = repository;
+    }
+    ResponeWithError(event) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return (0, response_1.ErrorResponse)(404, "request method not supported");
+        });
     }
     //User
     CreateUser(event) {
@@ -83,24 +90,47 @@ let UserService = class UserService {
     GetVerificationToken(event) {
         return __awaiter(this, void 0, void 0, function* () {
             const token = event.headers.authorization;
-            if (token) {
-                const payload = yield (0, password_1.VerifyToken)(token);
-                if (payload) {
-                    const { code, expiry } = (0, notification_1.GenerateAccessCode)();
-                    yield this.repository.updateVerificationCode(payload.user_id, code, expiry);
-                    // save on DB to confirm verification
-                    // const response = await SendVerificationCode(code, payload.phone);
-                    console.log(code, expiry);
-                    return (0, response_1.SuccessResponse)({
-                        message: "verification code is sent to your registered mobile number!",
-                    });
-                }
-            }
+            if (!token)
+                return (0, response_1.ErrorResponse)(500, "Invalid authorization");
+            const payload = yield (0, password_1.VerifyToken)(token);
+            if (!payload)
+                return (0, response_1.ErrorResponse)(403, "Authorization failed!");
+            const { code, expiry } = (0, notification_1.GenerateAccessCode)();
+            yield this.repository.updateVerificationCode(payload.user_id, code, expiry);
+            yield (0, notification_1.SendVerificationCode)(code, payload.phone);
+            console.log(code, expiry);
+            return (0, response_1.SuccessResponse)({
+                message: "verification code is sent to your registered mobile number!",
+            });
         });
     }
     VerifyUser(event) {
         return __awaiter(this, void 0, void 0, function* () {
-            return (0, response_1.SuccessResponse)({ message: "response from verify User" });
+            const token = event.headers.authorization;
+            if (!token)
+                return (0, response_1.ErrorResponse)(500, "Invalid authorization");
+            const payload = yield (0, password_1.VerifyToken)(token);
+            if (!payload)
+                return (0, response_1.ErrorResponse)(403, "Authorization failed!");
+            const input = (0, class_transformer_1.plainToClass)(UpdateInput_1.VerificationInput, event.body);
+            const error = yield (0, errors_1.AppValidatoinError)(input);
+            if (error)
+                return (0, response_1.ErrorResponse)(404, error);
+            const { verification_code, expiry } = yield this.repository.findAccount(payload.email);
+            return (0, response_1.SuccessResponse)({ message: "user verify!" });
+            if (verification_code === parseInt(input.code)) {
+                // check expire
+                const currentTime = new Date();
+                const diff = (0, dateHelper_1.TimeDifference)(expiry, currentTime.toISOString(), "m");
+                if (diff > 0) {
+                    console.log("verified successfully");
+                    yield this.repository.updateVerifyUser(payload.user_id);
+                    // update on db
+                }
+                else {
+                    return (0, response_1.ErrorResponse)(403, "Verification code expired!");
+                }
+            }
         });
     }
     //User Profile

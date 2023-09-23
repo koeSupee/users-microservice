@@ -23,7 +23,7 @@ export class UserRepository extends DBOperation {
 
   async findAccount(email:string){
 
-    const stringQuery = "SELECT user_id,phone,email,password,salt FROM users WHERE email = $1";
+    const stringQuery = "SELECT user_id,phone,email,password,salt,verification_code, expiry FROM users WHERE email = $1";
 
     const result = await this.executeQuery(stringQuery,[email]);
 
@@ -42,5 +42,16 @@ export class UserRepository extends DBOperation {
       return result.rows[0] as UserModel;
     }
     
+  }
+
+  async updateVerifyUser(userID: string) {
+    
+    const queryString = "UPDATE users SET verified=TRUE WHERE user_id=$1 RETURNING *";
+    const value = [userID];
+    const result = await this.executeQuery(queryString, value);
+    if(result.rowCount > 0) {
+      return result.rows[0] as UserModel;
+    }
+    throw new Error("User already verified!");
   }
 }
